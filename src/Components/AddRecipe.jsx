@@ -1,12 +1,45 @@
 /* eslint-disable react/prop-types */
 
-export default function TodoInput(props) {
-  const { inputDetails, setInputDetails } = props;
+export default function AddRecipe(props) {
+  const { inputDetails, setInputDetails, setAllRecipe, allRecipe } = props;
+
+  const handleAdd = () => {
+    const existingItems = JSON.parse(localStorage.getItem('recipe_list'));
+
+    if (existingItems?.length) {
+      const updatedItems = [{ ...inputDetails, id: existingItems.length + 1 }, ...existingItems];
+      localStorage.setItem('recipe_list', JSON.stringify(updatedItems));
+    } else {
+      localStorage.setItem('recipe_list', JSON.stringify([{ ...inputDetails, id: 1 }]));
+    }
+
+    setInputDetails({ name: '', description: '', estimatedTime: '' });
+
+    const currentExistingItems = JSON.parse(localStorage.getItem('recipe_list'));
+    setAllRecipe(currentExistingItems);
+  };
+
+  const handleEdit = () => {
+    const editeditems = allRecipe.map((item) => {
+      if (item.id === inputDetails.id) {
+        return inputDetails;
+      } else {
+        return item;
+      }
+    });
+
+    setAllRecipe(editeditems);
+    localStorage.setItem('recipe_list', JSON.stringify(editeditems));
+
+    setInputDetails({ name: '', description: '', estimatedTime: '' });
+  };
+  const isEditMode = !!inputDetails.id;
 
   return (
     <>
       <header className='flex flex-col gap-5'>
         <input
+          id='nameInput'
           className='text-black'
           value={inputDetails.name}
           onChange={(e) => {
@@ -31,14 +64,15 @@ export default function TodoInput(props) {
           placeholder='Enter recipe estinmated time (in mins)'
         />
       </header>
-      <button
-        onClick={() => {
-          localStorage.setItem('recipe_list', JSON.stringify(inputDetails));
-          setInputDetails({ name: '', description: '', estimatedTime: '' });
-        }}
-      >
-        Add
-      </button>
+      {isEditMode ? (
+        <button className='text-3xl' onClick={handleEdit}>
+          Edit
+        </button>
+      ) : (
+        <button className='text-3xl' onClick={handleAdd}>
+          Add
+        </button>
+      )}
     </>
   );
 }
